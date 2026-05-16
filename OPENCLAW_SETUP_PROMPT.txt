@@ -1,0 +1,49 @@
+# OpenClaw - 自动设置 GBrain 服务器提示词
+
+## 任务概述
+帮我在这台电脑上完整设置 GBrain HTTP MCP 服务器，以便局域网内的其他设备（我的笔记本上的 Trae Solo）可以访问。
+
+## 执行步骤
+
+### 1. 首先检查当前状态
+- 检查是否在 GBrain 仓库目录中
+- 检查 GBrain 是否已初始化（运行 `gbrain doctor`）
+- 检查 PGLite 数据库位置
+
+### 2. 创建访问令牌
+- 设置 GBRAIN_DATABASE_URL 环境变量指向 PGLite 数据库
+- 运行：`bun run src/commands/auth.ts create "trae-solo"`
+- **非常重要：保存好返回的令牌！**
+
+### 3. 获取本地 IP 地址
+- 获取这台电脑的局域网 IPv4 地址（通常是 192.168.x.x）
+- 使用 ipconfig 或 Get-NetIPAddress
+
+### 4. 配置 Windows 防火墙
+- 允许 8787 端口的入站连接
+- 使用管理员权限运行：`New-NetFirewallRule -DisplayName "GBrain MCP Server" -Direction Inbound -Protocol TCP -LocalPort 8787 -Action Allow`
+
+### 5. 检查并准备启动文件
+确认这些文件存在：
+- http-mcp-wrapper.ts
+- start-gbrain-server.ps1
+
+### 6. 启动服务器
+使用 PowerShell 启动 GBrain 服务器：
+`bun run start-gbrain-server.ps1 -Token "刚才创建的令牌" -Port 8787`
+
+或者直接运行：
+`bun run http-mcp-wrapper.ts --port 8787 --token "刚才创建的令牌"`
+
+### 7. 最终输出信息
+向我展示这些信息（复制保存）：
+- 服务器局域网 IP 地址：xxx.xxx.xxx.xxx
+- 访问令牌：gbrain_xxxxxx...
+- 端口：8787
+- 完整的 MCP URL：http://[IP]:8787/mcp
+- 健康检查 URL：http://[IP]:8787/health
+
+## 注意事项
+- 不要关闭服务器运行的窗口
+- 确保两台设备在同一局域网
+- 如果端口被占用，可以使用 8788 或其他端口
